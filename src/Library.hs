@@ -110,10 +110,12 @@ c) Mostrar otro ejemplo de invocación con otros datos, que permita obtener un r
 -- a) Queremos saber si en un conjunto de planes turísticos hay alguno que sea piola para una persona,
 -- esto implica que su nivel de stress bajaría en caso que vaya.
 hayAlgunPlanPiola :: Persona -> [PlanTuristico] -> Bool
-hayAlgunPlanPiola persona planes = 
-    any (< nivelDeEstress persona) 
-        (map (nivelDeEstress . ($ persona)) planes)
+hayAlgunPlanPiola persona  = 
+    any(bajaNivelEstressA persona) 
 
+bajaNivelEstressA :: Persona -> PlanTuristico -> Bool
+bajaNivelEstressA persona =
+    (< nivelDeEstress persona) . nivelDeEstress . ($ persona)
 
 -- b) Muestre el ejemplo de cómo invocaría a la función utilizando un ejemplo con planes variados (Villa
 -- Gesell en enero, Las Toninas con plata, Puerto Madryn y La Adela).
