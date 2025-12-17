@@ -199,3 +199,25 @@ aceptaEncuentro :: Aventurero -> Encuentro -> Bool
 aceptaEncuentro aventurero encuentro =
     criterioDeEleccion aventurero (encuentro aventurero)
         
+{-- ===========================
+ Punto 5
+
+Reflexionar:
+¿Qué sucedería si se da una lista infinita de personajes?
+¿Podría determinarse el estado final del aventurero? 
+
+RESPUESTA: 
+¿Qué sucedería si se da una lista infinita de personajes?
+Gracias a la evaluacion diferida (lazy evaluation) del paradigma funcional, 
+podriamos trabajar con una lista infinita de personajes 
+si el resultado terminara convergiendo a algo (se encuentre un punto de corte). 
+
+¿Podría determinarse el estado final del aventurero? 
+Si, en el caso que de todos los casos de la lista infinita de personajes, 
+hubiera un caso que el aventurero no acepte el encuentro, entonces se corta la recursion 
+y devuelve una lista finita de encuentros. 
+Y se podria determinar el estado final del aventurero despues de esos encuentros.
+
+En el caso contrario de que el aventurero aceptara todos los casos de la lista infinita 
+no podria determinarse el estado final del aventurero ya que no convergeria 
+y el proceso no terminaria. --}
