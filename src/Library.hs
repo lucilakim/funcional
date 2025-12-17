@@ -109,24 +109,35 @@ cambioParticular aventurero personaje = aventurero
 --}
 
 -- Personajes (encuentros)
-data Personaje = Curandero | Inspirador | Embaucador
 type Encuentro = Aventurero -> Aventurero
-encuentro :: Personaje -> Encuentro 
-encuentro personaje =
-    cambioParticular personaje . cambioGeneral 
+encuentroCurandero :: Encuentro 
+encuentroCurandero = darSouvenir . accionCurandero 
 
-cambioGeneral :: Aventurero -> Aventurero 
-cambioGeneral = modificarCarga (+ (-1))  
+encuentroInspirador :: Encuentro 
+encuentroInspirador = darSouvenir . accionInspirador 
+
+encuentroEmbaucador :: Encuentro 
+encuentroEmbaucador = darSouvenir . accionEmbaucador 
+
+darSouvenir :: Aventurero -> Aventurero 
+darSouvenir = modificarCarga (+ (-1))  
 
 modificarCarga :: (Number -> Number) -> Aventurero -> Aventurero
 modificarCarga ajusteCarga aventurero = 
     aventurero {carga = ajusteCarga . carga $ aventurero}
 
-cambioParticular :: Personaje -> Encuentro
-cambioParticular Curandero =  reducirCarga (/2) . modificarSaludPorc 20
-cambioParticular Inspirador  = modificarCoraje True . modificarSaludPorc 10 
-cambioParticular Embaucador = 
-    modificarCoraje False . modificarCarga (+10) . modificarSalud (/2) . modificarCriterio (lightPacker 10)
+accionCurandero ::  Aventurero -> Aventurero
+accionCurandero =  reducirCarga (/2) . modificarSaludPorc 20
+
+accionInspirador ::  Aventurero -> Aventurero
+accionInspirador  = modificarCoraje True . modificarSaludPorc 10 
+
+accionEmbaucador ::  Aventurero -> Aventurero
+accionEmbaucador = 
+    modificarCoraje False 
+    . modificarCarga (+10) 
+    . modificarSalud (/2) 
+    . modificarCriterio (lightPacker 10)
 
 modificarCriterio :: CriterioDeEleccion -> Aventurero  -> Aventurero
 modificarCriterio nuevoCriterio aventurero =
@@ -178,13 +189,13 @@ Automáticamente corta la ejecución y no evalúa los siguientes resultados.
 Dada una persona (aventurero) y una lista de encuentros debe determinar la lista de
 encuentros que realmente enfrentaría mientras cumple su criterio.--}
 
-encuentrosPosibles ::  Aventurero -> [Personaje] -> [Personaje]
+encuentrosPosibles ::  Aventurero -> [Encuentro] -> [Encuentro]
 encuentrosPosibles _ [] = []
-encuentrosPosibles aventurero (p:ps)
-    | aceptaEncuentro aventurero p  = p : encuentrosPosibles (encuentro p aventurero) ps
+encuentrosPosibles aventurero (e:es)
+    | aceptaEncuentro aventurero e  = e : encuentrosPosibles (e aventurero) es
     | otherwise = []
 
-aceptaEncuentro :: Aventurero -> Personaje -> Bool
-aceptaEncuentro aventurero personaje =
-    criterioDeEleccion aventurero (encuentro personaje aventurero)
+aceptaEncuentro :: Aventurero -> Encuentro -> Bool
+aceptaEncuentro aventurero encuentro =
+    criterioDeEleccion aventurero (encuentro aventurero)
     
