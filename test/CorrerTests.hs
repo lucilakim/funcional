@@ -1,5 +1,10 @@
-import Spec
 import PdePreludat
+import Test.Hspec
+--import qualified RecuHolidaysSpec
+import qualified RecuAventurerosSpec
+
 
 main :: IO ()
-main = correrTests
+main = hspec $ do
+  --RecuHolidaysSpec.spec
+  RecuAventurerosSpec.spec

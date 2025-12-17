@@ -4,148 +4,187 @@ import PdePreludat
 doble :: Number -> Number
 doble numero = numero + numero
 
+{--Recuperatorio pdep - Aventureros
+En un lugar muy lejano, existen aventureros que recorren un peligroso camino lleno de
+encuentros especiales. Cada encuentro es con un ser o situación que promete cambiar el
+estado del aventurero: aliviar su carga, aumentar su salud o modificar su coraje. Cada
+aventurero tiene un criterio para decidir si acepta o no los cambios propuestos. Queremos
+modelar todo este proceso.
 
-{--Haskell Holidays!
-Es tiempo de vacaciones... no importa cuando leas esto. Así que vamos a recrearnos la imaginación a
-partir de un negocio que modela tomarse un descanso visitando diferentes lugares.
+Punto 1 - Una aventura es más divertida si huele a peligro…
+De cada aventurero nos interesa conocer:
+●Nombre
+●Carga un número que indica la carga en kilos que lleva el aventurero.
+●Salud un número entre 0 y 100 que representa su nivel de salud actual.
+●Coraje que indica si el aventurero conserva el coraje o lo perdió.
+●Criterio de Selección de Encuentros que dado el estado resultante del aventurero
+tras un encuentro, determina si el aventurero está conforme.--}
 
-El dominio
-Una persona tiene un nivel de stress que es numérico, un nombre, las preferencias (le puede gustar el
-“mar”
-, la “gastronomía”
-, etc.), tiene una determinada cantidad de amigues. Existen los contingentes, que
-representan personas que quieren encarar unas vacaciones juntes.--}
-
-data Persona = Persona {
+data Aventurero = Aventurero {
     nombre :: String,
-    nivelDeEstress :: Number,
-    preferencias :: [String],
-    cantAmigos :: Number
-} deriving (Show)
+    carga :: Number,
+    salud :: Number,
+    coraje :: Bool, 
+    criterioDeEleccion :: CriterioDeEleccion 
+} deriving Show
 
-type Contingentes = [Persona]
+type CriterioDeEleccion = Aventurero -> Bool 
 
-{-- ===============================
-Punto 1: Vacaciones aplicadas
-Total de stress de la gente glotona
-Queremos saber el total de stress de la gente glotona de un contingente, que suma el nivel de stress de
-todas las personas a los que les gusta la gastronomía. 
+{--Criterios de Elección:
+●Conformista: Le viene bien cualquier resultado posible.
+●Valiente: Acepta si después del encuentro el aventurero tiene coraje o si su salud
+es mayor que 50.
+●LightPacker: Acepta si la carga final es menor a un valor umbral configurable. Por
+ejemplo puede pretender quedar con una carga menor a 15 kilos. Otros pueden ser
+más exigentes y preferir quedar con menos de 12 kilos
+Se pide definir un aventurero y sus criterios--}
 
-Contingente raro
-Un contingente raro es aquel en el que todas las personas tienen cantidad par de amigos.
+-- Conformista: Le viene bien cualquier resultado posible.
+conformista :: CriterioDeEleccion
+conformista _ = True
 
-Ambos puntos debe resolverlos utilizando composición, aplicación parcial y funciones de orden superior.
-No puede utilizar funciones auxiliares. --}
+-- Valiente: Acepta si después del encuentro el aventurero tiene coraje o si su salud es mayor que 50.
+valiente :: CriterioDeEleccion
+valiente aventurero = 
+    coraje aventurero || tieneSaludMayorA 50 aventurero
 
--------------
--- Total de stress de la gente glotona
---Queremos saber el total de stress de la gente glotona de un contingente, que suma el --nivel de stress de
---todas las personas a los que les gusta la gastronomía. 
-stressGenteGlotona :: Contingentes -> Number
-stressGenteGlotona = 
-    sum . map nivelDeEstress .filter (elem "gastronomia" . preferencias) 
+tieneSaludMayorA :: Number -> Aventurero -> Bool
+tieneSaludMayorA valor = (> valor) . salud
 
--------------
---Contingente raro
---Un contingente raro es aquel en el que todas las personas tienen cantidad par de amigos.
-contingenteRaro :: Contingentes -> Bool
-contingenteRaro =  all (even . cantAmigos) 
+{--LightPacker: Acepta si la carga final es menor a un valor umbral configurable. Por
+ejemplo puede pretender quedar con una carga menor a 15 kilos. Otros pueden ser
+más exigentes y preferir quedar con menos de 12 kilos
+Se pide definir un aventurero y sus criterios--}
+lightPacker :: Number -> CriterioDeEleccion
+lightPacker umbral = (< umbral) . carga  
 
 
-{-- ===============================
-Punto 2: Planes turísticos
-Queremos modelar los siguientes planes turísticos:
-● Villa Gesell: depende del mes, si es enero o febrero (mes 1 ó 2) aumenta el nivel de stress en 10,
-en el resto del año disminuye el stress en la mitad
+{-- =====================================
+Punto 2 - Casi Raiders of the lost Ark
+Dada una lista de aventureros y utilizando exclusivamente funciones de orden superior y
+aplicación parcial (sin recursividad) se pide:
 
-● Las Toninas: si el plan es con plata disminuye el nivel de stress de la persona a la mitad, si se va
-sin plata aumenta el stress 10 * la cantidad de amigues que tiene.
+a) Determinar si existe algún aventurero cuyo nombre contenga más de 5 letras.
 
-● Puerto Madryn: hace que tengas un nuevo amigue.
+b) Sumar la carga total de todos los aventureros cuya carga sea un número par.--}
 
-● La Adela: no produce cambios en la persona que se va. 
+-- a) Determinar si existe algún aventurero cuyo nombre contenga más de 5 letras.
+algunoConNombreLargo :: [Aventurero] -> Bool
+algunoConNombreLargo = any nombreLargo
 
-Se pide que evite especialmente la repetición de código.--}
+nombreLargo :: Aventurero -> Bool
+nombreLargo = (>5) . length . nombre
 
-type PlanTuristico = Persona -> Persona
--- ● Villa Gesell: depende del mes, si es enero o febrero (mes 1 ó 2) aumenta el nivel de stress en 10,
--- en el resto del año disminuye el stress en la mitad
-villaGessel :: String -> PlanTuristico
-villaGessel mes    
-    | (== "enero") mes || (== "febrero") mes = modificarEstres (+10)  
-    | otherwise = modificarEstres (/2) 
+-- b) Sumar la carga total de todos los aventureros cuya carga sea un número par.
+cargaTotalConCargaPar :: [Aventurero] -> Number
+cargaTotalConCargaPar  =
+        sum . map carga . conCargaNumeroPar
 
--- ● Las Toninas: si el plan es con plata disminuye el nivel de stress de la persona a la mitad, si se va
--- sin plata aumenta el stress 10 * la cantidad de amigues que tiene.
-lasToninas :: Bool -> PlanTuristico
-lasToninas conPlata persona    
-    | conPlata = modificarEstres (/2) persona
-    | otherwise = modificarEstres (incrementoSinPlata persona) persona
+conCargaNumeroPar :: [Aventurero] -> [Aventurero]
+conCargaNumeroPar = filter (even . carga) 
 
-incrementoSinPlata :: Persona -> (Number -> Number)
-incrementoSinPlata  persona = (+) . (*10) $ cantAmigos persona
+{-- ========================
+    Punto 3 Ke personajes
+Un encuentro con un personaje promete alterar el estado del aventurero. Todos los encuentros con personajes le descarga 1 kilo de su carga dado que siempre les deja un souvenir y además cuando se encuentra con:
 
-modificarEstres :: (Number -> Number) -> PlanTuristico
-modificarEstres ajusteEstress persona = 
-    persona {nivelDeEstress = ajusteEstress $ nivelDeEstress persona}   
+● Curandero (Healer): Reduce la carga a la mitad y aumenta la salud un 20%.
 
--- ● Puerto Madryn: hace que tengas un nuevo amigue.
-puertoMadryn :: PlanTuristico 
-puertoMadryn persona = persona { cantAmigos = (+1) . cantAmigos $ persona }  
+● Inspirador (Inspirer): Otorga coraje y aumenta la salud en un 10% sobre su valor
+actual.
 
--- ● La Adela: no produce cambios en la persona que se va. 
-laAdela :: PlanTuristico
-laAdela = id
-
+● Embaucador (Trickster): Quita el coraje, suma 10 a la carga, lo deja con la mitad de
+la salud y lo convence de que su criterio para los próximos encuentros tienen que
+ser de LightPacker con un máximo de 10 kilos.
+Debe evitar la repetición de lógica y respetar los límites mencionados anteriormente.--}
 {--
-a) Queremos saber si en un conjunto de planes turísticos hay alguno que sea piola para una persona,
-esto implica que su nivel de stress bajaría en caso que vaya.
+encuentro :: Aventurero -> Personaje -> Aventurero
+encuentro aventurero personaje = 
+     cambioParticular personaje . cambioGeneral aventurero 
 
-b) Muestre el ejemplo de cómo invocaría a la función utilizando un ejemplo con planes variados (Villa
-Gesell en enero, Las Toninas con plata, Puerto Madryn y La Adela).
+cambioGeneral :: Aventurero -> Aventurero 
+cambioGeneral = (+ (-1)) carga
 
-c) Mostrar otro ejemplo de invocación con otros datos, que permita obtener un resultado diferente.
+cambioParticular :: Aventurero -> Personaje -> Aventurero
+cambioParticular aventurero personaje = aventurero
 --}
 
--- a) Queremos saber si en un conjunto de planes turísticos hay alguno que sea piola para una persona,
--- esto implica que su nivel de stress bajaría en caso que vaya.
-hayAlgunPlanPiola :: Persona -> [PlanTuristico] -> Bool
-hayAlgunPlanPiola persona  = 
-    any(bajaNivelEstressA persona) 
+-- Personajes (encuentros)
+data Personaje = Curandero | Inspirador | Embaucador
+type Encuentro = Aventurero -> Aventurero
+encuentro :: Personaje -> Encuentro 
+encuentro personaje =
+    cambioParticular personaje . cambioGeneral 
 
-bajaNivelEstressA :: Persona -> PlanTuristico -> Bool
-bajaNivelEstressA persona =
-    (< nivelDeEstress persona) . nivelDeEstress . ($ persona)
+cambioGeneral :: Aventurero -> Aventurero 
+cambioGeneral = modificarCarga (+ (-1))  
 
--- b) Muestre el ejemplo de cómo invocaría a la función utilizando un ejemplo con planes variados (Villa
--- Gesell en enero, Las Toninas con plata, Puerto Madryn y La Adela).
-planesVariados :: [PlanTuristico]
-planesVariados = [villaGessel "enero", lasToninas True, puertoMadryn, laAdela]
+modificarCarga :: (Number -> Number) -> Aventurero -> Aventurero
+modificarCarga ajusteCarga aventurero = 
+    aventurero {carga = ajusteCarga . carga $ aventurero}
 
-pedro = Persona {
-    nombre = "Pedro",
-    nivelDeEstress = 10,
-    preferencias = ["playa"],
-    cantAmigos = 1000
-} 
+cambioParticular :: Personaje -> Encuentro
+cambioParticular Curandero =  reducirCarga (/2) . modificarSaludPorc 20
+cambioParticular Inspirador  = modificarCoraje True . modificarSaludPorc 10 
+cambioParticular Embaucador = 
+    modificarCoraje False . modificarCarga (+10) . modificarSalud (/2) . modificarCriterio (lightPacker 10)
 
--- Ejemplo de invocacion:
--- hayAlgunPlanPiola :: Persona -> PlanesTuristicos -> Bool
--- hayAlgunPlanPiola pedro planesVariados
+modificarCriterio :: CriterioDeEleccion -> Aventurero  -> Aventurero
+modificarCriterio nuevoCriterio aventurero =
+    aventurero {criterioDeEleccion = nuevoCriterio}
+
+modificarCoraje :: Bool -> Aventurero -> Aventurero
+modificarCoraje valor aventurero = aventurero {coraje = valor}
+
+reducirCarga :: (Number -> Number) -> Aventurero -> Aventurero
+reducirCarga ajusteCarga aventurero = 
+    aventurero { carga = ajusteCarga $ carga aventurero}
+
+limitesSalud :: Number -> Number
+limitesSalud  = min 100 . max 0 
+
+modificarSalud :: (Number -> Number) -> Aventurero -> Aventurero
+modificarSalud ajusteSalud aventurero =
+    aventurero {salud = limitesSalud . ajusteSalud . salud $ aventurero}
+
+modificarSaludPorc :: Number -> Aventurero -> Aventurero 
+modificarSaludPorc porcentaje = 
+    modificarSalud (* (1 + porcentaje/100)) 
+
+{-- =====================================
+    Punto 4 ¿A qué encuentros se enfrentaría un aventurero? (resolver
+utilizando recursividad)
+
+Dada una lista de encuentros, queremos determinar a cuáles de ellos se enfrentaría un
+aventurero. La lógica es:
+
+● Tras cada encuentro, el aventurero evalúa su criterio.
+
+● Si el resultado no le satisface, no continúa con los encuentros siguientes.
+
+● Si le satisface se produce el encuentro y pasa al siguiente.
 
 
--- c) Mostrar otro ejemplo de invocación con otros datos, que permita obtener un resultado diferente.
+Por ejemplo, si un aventurero con carga 6, salud 50, sin coraje, y criterio Valiente se
+enfrenta a la lista [Curandero, Inspirador, Embaucador, Curandero]:
 
-juana =  Persona {
-    nombre = "Juana",
-    nivelDeEstress = 1000,
-    preferencias = ["gastronomia"],
-    cantAmigos = 5
-}
+● Con Curandero: reduce la carga a 3 y queda con energía en 60 ⇒ cumple el criterio
+(energía > 50).
 
-planesEstresantes :: [PlanTuristico]
-planesEstresantes = [villaGessel "febrero", lasToninas False]
+● Con Inspirador: tiene coraje, salud aumenta a 66 ⇒ cumple el criterio.
 
--- Ejemplo de invocacion:
--- hayAlgunPlanPiola :: Persona -> PlanesTuristicos -> Bool
--- hayAlgunPlanPiola juana planesEstresantes
+● Con Embaucador: quita el coraje y suma 10 a la carga y su salúd queda en 33⇒ no
+cumple criterio, entonces no se aplica y se descarta de la solución.
+Automáticamente corta la ejecución y no evalúa los siguientes resultados.
+Dada una persona (aventurero) y una lista de encuentros debe determinar la lista de
+encuentros que realmente enfrentaría mientras cumple su criterio.--}
+
+encuentrosPosibles ::  Aventurero -> [Personaje] -> [Personaje]
+encuentrosPosibles _ [] = []
+encuentrosPosibles aventurero (p:ps)
+    | aceptaEncuentro aventurero p  = p : encuentrosPosibles (encuentro p aventurero) ps
+    | otherwise = []
+
+aceptaEncuentro :: Aventurero -> Personaje -> Bool
+aceptaEncuentro aventurero personaje =
+    criterioDeEleccion aventurero (encuentro personaje aventurero)
+    
