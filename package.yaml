@@ -38,8 +38,6 @@ tests:
     main:                CorrerTests.hs
     source-dirs:         
       - test
-      - 01-recu_hollidays
-      - 02-recu_aventureros
       - src
     ghc-options:
     - -threaded

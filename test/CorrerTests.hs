@@ -7,4 +7,5 @@ import qualified RecuAventurerosSpec
 main :: IO ()
 main = hspec $ do
   --RecuHolidaysSpec.spec
-  RecuAventurerosSpec.spec
+  --RecuAventurerosSpec.spec
+  RecuMagosSpec.spec
